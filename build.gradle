@@ -9,9 +9,22 @@ apply plugin: 'idea'
 apply plugin: 'eclipse'
 apply plugin: 'maven'
 
-version='1.0.2'
+version='5.0.0'
 
 license {
     header rootProject.file('src/main/license/xebialabs_community.license')
-    strictCheck true
+    strictCheck false
 }
+
+task javac(type: JavaCompile) {
+    source = fileTree(dir: 'src', include: '**/*.java')
+    destinationDir = file('build/classes/main')
+    include 'src/main/com/xebialabs/xlrelease/plugin/overthere/PowershellScript.java'
+    classpath = files('build/classes/main')
+}
+
+dependencies {
+    compile fileTree(dir: '/Users/rbroker/Documents/xl-release-5.0.0-server/lib', include: ['*.jar'])
+    compile fileTree( dir: '/Users/rbroker/.gradle/caches/', include: ['*.jar'])
+}
+

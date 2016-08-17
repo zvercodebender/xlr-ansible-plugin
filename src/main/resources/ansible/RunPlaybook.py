@@ -5,44 +5,62 @@
 #
 
 import sys
-from com.xebialabs.xlrelease.plugin.overthere import OverthereSession
+from com.xebialabs.xlrelease.plugin.ansible import remoteAnsible
 
 
-host = task.pythonScript.getProperty("host")
-print "HOST     %s" % host
-print "USERNAME %s" % host.getProperty('username')
+if address == None :
+     task.pythonScript.setProperty("address", host.get("address") )
+     address = host.get("address")
+# End if
+if username == None :
+     task.pythonScript.setProperty("username", host.get("username") )
+     username = host.get("username")
+# End if
+if password == None :
+     task.pythonScript.setProperty("password", host.get("password") )
+     password = host.get("password")
+# End if
+if connectionType == None :
+    task.pythonScript.setProperty("connectionType", host.get("connectionType"))
+# End if
+task.pythonScript.setProperty("protocol", host.get("protocol"))
+protocol = host.get("protocol")
+
+envList = "# Setup Environment Variables"
+for key in envVars:
+    print " %s = %s " % (key, envVars[key])
+    envList = "%s\nexport %s=%s" % ( envList, key, envVars[key] )
+#End for
+
+print "HOST     %s" % address
+print "USERNAME %s" % username
 print "-------------------------"
-script = "source /home/%s/.profile\nansible-playbook -i %s" % (host.getProperty('username'),playbook)
+script = """#!/bin/bash
+set -x
+%s
+ansible-playbook %s""" % (envList, playbook)
 print script
 print "-------------------------"
 
+script = remoteAnsible( task.pythonScript, script)
+exitCode = script.execute()
 
-#apply_task_options()
-session = OverthereSession(host)
-response = session.execute(script, remotePath)
+output = script.getStdout()
+err = script.getStderr()
 
-# set variables
-output = response.stdout
-error = response.stderr
-
-if response.rc == 0:
-    print "```"
+if (exitCode == 0):
     print output
-    print "```"
 else:
-    print "Exit code: "
-    print response.rc
+    print "Exit code "
+    print exitCode
     print
     print "#### Output:"
-    print "```"
     print output
-    print "```"
 
-    print "----"
     print "#### Error stream:"
-    print "```"
-    print error
-    print "```"
+    print err
     print
+    print "----"
 
-    sys.exit(response.rc)
+sys.exit(exitCode)
+

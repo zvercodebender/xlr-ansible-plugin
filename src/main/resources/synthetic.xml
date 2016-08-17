@@ -8,15 +8,85 @@
 -->
 <synthetic xsi:schemaLocation="http://www.xebialabs.com/deployit/synthetic synthetic.xsd" xmlns="http://www.xebialabs.com/deployit/synthetic" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-  <type type="ansible.RunPlaybook" extends="xlrelease.PythonScript">
+  <type type="ansible.RunPlaybook" extends="remoteScript.Unix">
     <property name="iconLocation" default="ansible/ansible_logo.png" hidden="true"/>
     <property name="taskColor" hidden="true" default="#64c5c7"/>
+    <property name="scriptLocation" default="ansible/RunPlaybook.py" hidden="true"/>
+    <property name="host" category="input" kind="ci" referenced-type="Unix.Host" />
+    <property name="envVars" category="input" kind="map_string_string" />
     <property name="playbook" category="input" description="playbook to run on the remote host" />
-    <property name="host" kind="ci" referenced-type="remoteScript.OverthereHost" category="input" description="Overthere host to execute the script."/>
-    <property name="remotePath" required="false" category="input" description="Remote working directory (optional)."/>
+    <!-- Hidden -->
+    <property name="connectionType" default="SCP" hidden="true" />
+    <property name="protocol" hidden="true" default="ssh" />
 
     <property name="output" required="false" category="output" description="Console output of the remote process (stdout)."/>
     <property name="error" required="false" category="output" description="Error output of the remote process (stderr)."/>
   </type>
+
+  <type type="Unix.Host" extends="xlrelease.Configuration" description="remoteScript.OverthereHost">
+    <property name="os" kind="enum" enum-class="com.xebialabs.overthere.OperatingSystemFamily" hidden="true" default="UNIX" />
+    <property name="connectionType" default="SCP" label="Connection type"
+              description="Type of SSH connection to create (SCP, SFTP, SU, SUDO, INTERACTIVE_SUDO, SFTP_CYGWIN, SFTP_WINSSHD)"/>
+
+    <!-- Deprecated since XL Release 5.0.0 -->
+    <property name="sudo" kind="boolean" required="false" default="false"
+              description="Indicates that the script will be executed using sudo (deprecated since XL Release 5.0.0)"/>
+
+    <property name="protocol" hidden="true" default="ssh" />
+    <property name="address" kind="string" required="true"
+              description="Address of the host"/>
+    <property name="port" kind="integer" required="true" default="22"
+              description="Port on which the SSH server runs"/>
+    <property name="username" kind="string" required="true"
+              description="Username to connect with"/>
+    <property name="password" kind="string" required="false" password="true"
+              description="Password to use for authentication"/>
+    <property name="privateKey" kind="string" required="false"
+              description="Private key to use for authentication"/>
+    <property name="privateKeyFile" kind="string" required="false"
+              description="Private key file to use for authentication"/>
+    <property name="passphrase" kind="string" required="false" password="true"
+              description="Optional passphrase for the private key in the private key file"/>
+
+    <property name="allocateDefaultPty" kind="boolean" required="false" default="false" hidden="true"
+              description="If true, a default PTY (dummy:80:24:0:0) is allocated when executing a command"/>
+    <property name="allocatePty" kind="string" required="false" hidden="true"
+              description="Specification for the PTY to be allocated when executing a command. The format is TERM:COLS:ROWS:WIDTH:HEIGHT, e.g. xterm:80:24:0:0"/>
+    <property name="interactiveKeyboardAuthRegex" kind="string" default=".*Password:[ ]?" hidden="true"
+              description="Regular expression to look for in keyboard-interactive authentication before sending the password"/>
+
+    <property name="sudoUsername" kind="string" required="false"
+              label="SUDO username" description="Username to sudo to when accessing files or executing commands"/>
+    <property name="sudoCommandPrefix" kind="string" default="sudo -u {0}" hidden="true"
+              description="Sudo command to prefix to the original command. The placeholder {0} is replaced with the sudoUsername"/>
+    <property name="sudoQuoteCommand" kind="boolean" required="false" default="false" hidden="true"
+              description="If true, the original command is quoted when it is prefixed with sudoCommandPrefix"/>
+    <property name="sudoPreserveAttributesOnCopyFromTempFile" kind="boolean" required="false" default="true" hidden="true"
+              description="If true, files are copied from the connection temporary directory using the -p flag to the cp command"/>
+    <property name="sudoPreserveAttributesOnCopyToTempFile" kind="boolean" required="false" default="true" hidden="true"
+              description="If true, files are copied to the connection temporary directory using the -p flag to the cp command"/>
+    <property name="sudoPasswordPromptRegex" kind="string" default=".*[Pp]assword.*:" hidden="true"
+              description="Regular expression to look for in interactive sudo before sending the password"/>
+    <property name="sudoOverrideUmask" kind="boolean" required="false" default="true" hidden="true"
+              description="If true, permissions are explicitly changed with chmod -R go+rX after uploading a file or directory"/>
+
+    <property name="suUsername" kind="string" required="false"
+              label="SU username" description="Username to su to when accessing files or executing commands"/>
+    <property name="suPassword" kind="string" required="false" password="true"
+              label="SU password" description="Password of user to su to when accessing files or executing commands"/>
+    <property name="suCommandPrefix" kind="string" default="su - {0} -c" hidden="true"
+              description="Su command to prefix to the original command. The placeholder {0} is replaced with the sudoUsername"/>
+    <property name="suQuoteCommand" kind="boolean" required="false" default="true" hidden="true"
+              description="If true, the original command is quoted when it is prefixed with suCommandPrefix"/>
+    <property name="suPreserveAttributesOnCopyFromTempFile" kind="boolean" required="false" default="true" hidden="true"
+              description="If true, files are copied from the connection temporary directory using the -p flag to the cp command"/>
+    <property name="suPreserveAttributesOnCopyToTempFile" kind="boolean" required="false" default="true" hidden="true"
+              description="If true, files are copied to the connection temporary directory using the -p flag to the cp command"/>
+    <property name="suPasswordPromptRegex" kind="string" default=".*[Pp]assword.*:" hidden="true"
+              description="Regular expression to look for before sending the password"/>
+    <property name="suOverrideUmask" kind="boolean" required="false" default="true" hidden="true"
+              description="If true, permissions are explicitly changed with chmod -R go+rX after uploading a file or directory"/>
+  </type>
+
 
  </synthetic>
